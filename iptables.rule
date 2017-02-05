@@ -1,7 +1,9 @@
 #!/bin/bash
+BASE_PATH=`readlink -e $(dirname $0)`
 
 # 請先輸入您的相關參數，不要輸入錯誤了！
-EXTIF="eth0"             # 這個是可以連上 Public IP 的網路介面
+EXTIF=`ifconfig -s |grep -v lo |grep -v Iface |awk '{print $1}'`
+# 這個是可以連上 Public IP 的網路介面
 INIF=""              # 內部 LAN 的連接介面；若無則寫成 INIF=""
 INNET="" # 若無內部網域介面，請填寫成 INNET=""
 export EXTIF INIF INNET
@@ -29,11 +31,11 @@ iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # 3. 啟動額外的防火牆 script 模組
-if [ -f ${PWD}/iptables.deny ]; then
-sh ${PWD}/iptables.deny
+if [ -f ${BASE_PATH}/iptables.deny ]; then
+sh ${BASE_PATH}/iptables.deny
 fi
-if [ -f ${PWD}/iptables.allow ]; then
-sh ${PWD}/iptables.allow
+if [ -f ${BASE_PATH}/iptables.allow ]; then
+sh ${BASE_PATH}/iptables.allow
 fi
 
 
@@ -45,13 +47,12 @@ iptables -A INPUT -i $EXTIF -p icmp --icmp-type $tyicmp -j ACCEPT
 done
 
 # 5. 允許某些服務的進入，請依照你自己的環境開啟
-
 # iptables -A INPUT -p TCP -i $EXTIF --dport  21 --sport 1024:65534 -j ACCEPT # FTP
-iptables -A INPUT -p TCP -i $EXTIF --dport  22 --sport 1024:65534 -j ACCEPT # SSH
+# iptables -A INPUT -p TCP -i $EXTIF --dport  22 --sport 1024:65534 -j ACCEPT # SSH
 # iptables -A INPUT -p TCP -i $EXTIF --dport  25 --sport 1024:65534 -j ACCEPT # SMTP
 # iptables -A INPUT -p UDP -i $EXTIF --dport  53 --sport 1024:65534 -j ACCEPT # DNS
 # iptables -A INPUT -p TCP -i $EXTIF --dport  53 --sport 1024:65534 -j ACCEPT # DNS
-iptables -A INPUT -p TCP -i $EXTIF --dport  80 --sport 1024:65534 -j ACCEPT # WWW
+#iptables -A INPUT -p TCP -i $EXTIF --dport  80 --sport 1024:65534 -j ACCEPT # WWW
 #iptables -A INPUT -p TCP -i $EXTIF --dport  8080 --sport 1024:65534 -j ACCEPT # WWW
 #iptables -A INPUT -p TCP -i $EXTIF --dport 110 --sport 1024:65534 -j ACCEPT # POP3
 # iptables -A INPUT -p TCP -i $EXTIF --dport 143 --sport 1024:65534 -j ACCEPT # POP3
