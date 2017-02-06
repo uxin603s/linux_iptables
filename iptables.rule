@@ -1,4 +1,9 @@
 #!/bin/bash
+if [ ! $1 ]; then
+	echo backup
+	cat $0 > iptables.backup
+fi
+
 BASE_PATH=`readlink -e $(dirname $0)`
 
 # 請先輸入您的相關參數，不要輸入錯誤了！
@@ -106,3 +111,25 @@ fi
 
 # 6. 最終將這些功能儲存下來吧！
 service iptables save
+if [ ! $1 ]; then
+	i=12
+	echo -n "(ctrl+c中斷還原)還原時間:$i"
+	while [ ! $i == 0 ]; do 
+		sleep 1
+		count=`echo $i | wc -L`
+			
+		for (( j=0; j<$count; j=j+1 ))
+		do
+			echo -ne "\b"
+		done	
+		
+		echo -ne "          \b\b\b\b\b\b\b\b\b\b"
+		
+		i=$(($i-1));
+		echo -n "${i}"		
+	done
+	echo 
+	echo "還原"
+	cat iptables.backup > iptables.rule
+	sh iptables.rule 1
+fi
